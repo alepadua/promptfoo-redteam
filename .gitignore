@@ -1,6 +1,7 @@
 # Ignorar dados sensíveis e gerados
 .env
 .copilot-profile/
+.rovo-profile/
 node_modules/
 
 # Arquivos de saída do Promptfoo

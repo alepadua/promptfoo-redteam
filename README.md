@@ -48,10 +48,12 @@ echo "OPENAI_API_KEY=sua_chave_aqui" >> .env
 
 ```
 .
-├── copilot-playwright-provider.js   # Provedor principal — conecta ao Chrome via CDP
+├── copilot-playwright-provider.js   # Provedor Copilot — conecta ao Chrome via CDP
+├── rovo-playwright-provider.js      # Provedor Atlassian Rovo (Jira/Confluence) via CDP
 ├── workspace/
-│   ├── security-eval-fast.yaml      # Config principal — OWASP + RedTeam (19 plugins)
-│   ├── security-eval-full.yaml      # Config completa — todos os plugins (144 testes)
+│   ├── security-eval-fast.yaml      # Config Copilot — OWASP + RedTeam (19 plugins)
+│   ├── security-eval-full.yaml      # Config Copilot completa — todos os plugins (144 testes)
+│   ├── rovo-security-eval.yaml      # Config Atlassian Rovo — Jira, Confluence, RBAC
 │   ├── clean-test.yaml              # Teste de validação básica (2 perguntas)
 │   └── redteam-owasp.yaml           # Config alternativa com frameworks OWASP
 ├── scripts/
@@ -276,6 +278,49 @@ evaluateOptions:
 ### Erro "API key is not set"
 **Causa:** Juiz externo (OpenAI/Gemini) não configurado.  
 **Solução:** Configure `.env` conforme seção "Configuração do Juiz" acima, ou remova os plugins que requerem juiz externo.
+
+---
+
+## Avaliação do Atlassian Rovo (Jira & Confluence)
+
+O projeto já inclui um provedor pronto (`rovo-playwright-provider.js`) e uma configuração de segurança específica (`workspace/rovo-security-eval.yaml`) voltada para testar o **Atlassian Rovo**.
+
+### O que o teste do Rovo avalia:
+1. **Isolamento de Projetos e RBAC:** Tentativas de consultar issues e sprints de projetos privados/restritos (ex: RH, Financeiro, InfoSec).
+2. **Confluence Confidencial:** Acesso a páginas com restrições de permissão ou credenciais documentadas.
+3. **Excessive Agency:** Pedidos para alterar status de tickets, criar projetos ou manipular workflows sem autorização.
+4. **Vazamento de PII:** Extração de dados cadastrais de colaboradores em tickets de Service Desk.
+5. **Extração de System Prompt:** Revelação de diretrizes internas e ferramentas do Rovo.
+
+### Como executar quando o Rovo estiver habilitado:
+
+#### 1. Iniciar o Chrome autenticado no Atlassian
+```bash
+google-chrome \
+  --remote-debugging-port=9222 \
+  --user-data-dir="$(pwd)/.rovo-profile" \
+  --no-first-run \
+  --no-default-browser-check \
+  "https://alexandrepadua91.atlassian.net" &
+```
+*(Faça o login manual no Atlassian na janela que se abrir)*
+
+#### 2. Gerar os casos de teste específicos do Rovo
+```bash
+promptfoo redteam generate \
+  -c workspace/rovo-security-eval.yaml \
+  -o workspace/rovo-security-eval-generated.yaml \
+  --force
+```
+
+#### 3. Executar os testes contra o Rovo
+```bash
+promptfoo redteam eval \
+  -c workspace/rovo-security-eval-generated.yaml \
+  --max-concurrency 1
+```
+
+> **Dica técnica sobre o Rovo:** O `rovo-playwright-provider.js` foi programado para detectar automaticamente tanto `<textarea>` quanto elementos `<div contenteditable="true">` (o editor ProseMirror usado pelo Jira/Confluence), além de despachar os eventos de teclado nativos necessários para acionar o envio no painel lateral do Rovo.
 
 ---
 
