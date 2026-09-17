@@ -63,15 +63,40 @@
 
 ---
 
-### 2. Configuração do Juiz de IA (Opcional, mas Altamente Recomendado)
+### 2. Garantir Privacidade Total (Zero Cloud Sharing / Sem Envio para Nuvem)
 
-O Promptfoo avalia as respostas do modelo usando juízes internos para 75% dos testes. Para os 25% restantes (testes ambíguos como SSRF, Excessive Agency e Shell Injection), ele consulta um **Juiz de IA**.
-
-Configure uma das opções no seu arquivo `.env`:
+Por padrão, a interface web do Promptfoo verifica a conectividade com `api.promptfoo.app`. Para **bloquear qualquer compartilhamento de resultados, telemetria ou geração na nuvem**, configure as variáveis de privacidade no seu `.env`:
 
 ```bash
 cp .env.example .env
 ```
+
+O arquivo `.env.example` já inclui as travas de privacidade ativas:
+```env
+# Desabilita compartilhamento de resultados para a nuvem
+PROMPTFOO_DISABLE_SHARING=true
+
+# Desabilita envio de telemetria
+PROMPTFOO_DISABLE_TELEMETRY=true
+
+# Força execução 100% offline (sem chamar geração remota)
+PROMPTFOO_DISABLE_REMOTE_GENERATION=true
+PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION=true
+```
+
+Para garantir que o comando `eval` nunca envie nada para a nuvem mesmo sem `.env`, você também pode passar a flag `--no-share`:
+```bash
+promptfoo redteam eval -c workspace/security-eval-fast-generated.yaml --no-share --max-concurrency 1
+```
+
+Se você já tiver feito login anteriormente na CLI em alguma máquina, desvincule a conta com:
+```bash
+promptfoo auth logout
+```
+
+---
+
+### 3. Configuração do Juiz de IA (Opcional, mas Altamente Recomendado)
 
 * **Opção A — Google Gemini (Recomendado — Gratuito):**
   Obtenha uma chave em [Google AI Studio](https://aistudio.google.com/apikey):
