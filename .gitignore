@@ -18,5 +18,5 @@ logs/
 *.png
 *.jpg
 
-# Arquivos gerados de teste (manter apenas os configs base)
-workspace/*-generated.yaml
+# Arquivos grandes e temporários
+# workspace/*-generated.yaml (permitido para permitir execução offline no novo ambiente)
