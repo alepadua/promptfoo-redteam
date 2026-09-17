@@ -96,45 +96,42 @@ promptfoo auth logout
 
 ---
 
-### 3. Configuração do Amazon Bedrock (Geração de Testes & Juiz Local 100% Privado)
+### 3. Configuração via Amazon Bedrock Mantle (API Direct / Sem Conta IAM)
 
-Você pode utilizar o **Amazon Bedrock** (ex: Claude 3.5 Sonnet v2) tanto para:
-1. **Gerar novos casos de teste Red Team** a partir dos plugins de segurança (`redteam.provider`), sem enviar seus prompts ou políticas para a API da Promptfoo.
-2. **Atuar como Juiz / Grader** (`defaultTest.options.provider`) para avaliar automaticamente se o Copilot ou Rovo vazou informações ou violou políticas de segurança.
+O **Amazon Bedrock Mantle** expõe uma interface de alta performance compatível com OpenAI (Chat Completions) que **autentica diretamente via Bearer Token / API Key**, dispensando totalmente credenciais IAM de conta (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` ou AWS SSO).
 
-#### Passo A: Configurar as credenciais AWS no `.env`
-O Promptfoo utiliza o SDK oficial da AWS (`@aws-sdk/client-bedrock-runtime`). Configure no seu `.env`:
+O Promptfoo possui suporte nativo de primeira classe ao Mantle através do provider `bedrock:mantle:<modelo>`.
+
+#### Passo A: Configurar o Bearer Token no `.env`
+Basta definir o token e a região no seu `.env`:
 
 ```env
-# Região onde os modelos do Bedrock estão ativos (us-east-1, us-west-2, sa-east-1, etc.)
+# Token de Acesso / Chave de API do Bedrock Mantle
+AWS_BEARER_TOKEN_BEDROCK=seu_token_aqui
+
+# Região onde o endpoint Mantle está ativo (padrão: us-east-1)
 AWS_REGION=us-east-1
-
-# Opção 1: Credenciais diretas de IAM (Access Key e Secret)
-AWS_ACCESS_KEY_ID=AKIA...
-AWS_SECRET_ACCESS_KEY=...
-# AWS_SESSION_TOKEN= (obrigatório caso use credenciais temporárias ou STS)
-
-# Opção 2: Ou Perfil local do AWS CLI (~/.aws/credentials ou AWS SSO)
-# AWS_PROFILE=default
 ```
 
-> **Permissões Mínimas de IAM:** O usuário/role precisa apenas da permissão `bedrock:InvokeModel` no ARN dos modelos que você pretende utilizar.
+> **Vantagem:** Não há necessidade de configurar chaves de acesso IAM, arquivos `~/.aws/credentials` ou assinar requisições SigV4.
 
-#### Passo B: Modelos recomendados do Bedrock
-No `workspace/security-eval-fast.yaml` e `workspace/rovo-security-eval.yaml`, o provider já vem pré-configurado:
-* `bedrock:anthropic.claude-3-5-sonnet-20241022-v2:0` (Claude 3.5 Sonnet v2 — Máxima eficácia e raciocínio adversarial)
-* `bedrock:us.anthropic.claude-3-5-sonnet-20241022-v2:0` (Cross-region inference profile — Maior disponibilidade)
-* `bedrock:anthropic.claude-3-haiku-20240307-v1:0` (Claude 3 Haiku — Rápido e ultra-econômico)
+#### Passo B: Modelos Disponíveis no Bedrock Mantle
+As configurações `workspace/security-eval-fast.yaml` e `workspace/rovo-security-eval.yaml` vêm preparadas para o Mantle:
+* `bedrock:mantle:deepseek.v3.1` (*Padrão configurado*)
+* `bedrock:mantle:mistral.mistral-large-2407-v1:0`
+* `bedrock:mantle:qwen.qwen2-5-72b-instruct`
+* `bedrock:mantle:zai.glm-4.6`
+* `bedrock:mantle:google.gemma-4-31b-it`
 
-#### Passo C: Como sintetizar novos casos via Bedrock
+#### Passo C: Como sintetizar novos casos via Bedrock Mantle
 ```bash
-# Gerar casos de teste para Copilot via Bedrock (local)
+# Gerar casos de teste para Copilot via Bedrock Mantle (100% privado)
 promptfoo redteam generate \
   -c workspace/security-eval-fast.yaml \
   -o workspace/security-eval-fast-generated.yaml \
   --force
 
-# Gerar casos de teste para Rovo via Bedrock (local)
+# Gerar casos de teste para Rovo via Bedrock Mantle (100% privado)
 promptfoo redteam generate \
   -c workspace/rovo-security-eval.yaml \
   -o workspace/rovo-security-eval-generated.yaml \
@@ -143,7 +140,14 @@ promptfoo redteam generate \
 
 ---
 
-### 4. Outros Provedores Alternativos de IA (Opcional)
+### 4. Alternativa: Bedrock Runtime Clássico (Via Credenciais IAM)
+Se em algum momento preferir utilizar a API nativa do Bedrock (`Converse` / `InvokeModel`) com credenciais de conta IAM:
+* No `.env`: Defina `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` e `AWS_REGION`.
+* No YAML: Troque o id do provider para `bedrock:anthropic.claude-3-5-sonnet-20241022-v2:0`.
+
+---
+
+### 5. Outros Provedores Alternativos de IA (Opcional)
 
 Caso não queira usar o Bedrock em alguma máquina específica:
 * **Google Gemini (Gratuito):** `GOOGLE_API_KEY=sua_chave` em [Google AI Studio](https://aistudio.google.com/apikey).

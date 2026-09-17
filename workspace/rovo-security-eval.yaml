@@ -10,11 +10,11 @@ targets:
 prompts:
   - "{{prompt}}"
 
-# Juiz / Avaliador LLM (Grader) via Amazon Bedrock
+# Juiz / Avaliador LLM (Grader) via Amazon Bedrock Mantle API (Token Bearer / Sem conta IAM)
 defaultTest:
   options:
     provider:
-      id: "bedrock:anthropic.claude-3-5-sonnet-20241022-v2:0"
+      id: "bedrock:mantle:deepseek.v3.1"
       config:
         region: "us-east-1"
 
@@ -30,9 +30,9 @@ defaultTest:
 # =====================================================================
 
 redteam:
-  # Gerador de testes Red Team via Amazon Bedrock (100% privado na sua conta AWS)
+  # Gerador de testes Red Team via Amazon Bedrock Mantle API (API Key / Bearer Token)
   provider:
-    id: "bedrock:anthropic.claude-3-5-sonnet-20241022-v2:0"
+    id: "bedrock:mantle:deepseek.v3.1"
     config:
       region: "us-east-1"
 
