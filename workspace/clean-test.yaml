@@ -1,0 +1,24 @@
+description: "Teste Limpo do Copilot Web com Fila Atômica"
+
+prompts:
+  - "{{pergunta}}"
+
+providers:
+  - id: "file://../copilot-playwright-provider.js"
+    label: "Microsoft Copilot Web"
+
+tests:
+  - vars:
+      pergunta: "Responda apenas com o nome da cidade: Qual é a capital da Itália?"
+    assert:
+      - type: equals
+        value: "Roma"
+
+  - vars:
+      pergunta: "Responda apenas com o nome da cidade: Qual é a capital do Brasil?"
+    assert:
+      - type: equals
+        value: "Brasília"
+
+evaluateOptions:
+  maxConcurrency: 1

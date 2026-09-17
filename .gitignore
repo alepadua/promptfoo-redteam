@@ -1,0 +1,21 @@
+# Ignorar dados sensíveis e gerados
+.env
+.copilot-profile/
+node_modules/
+
+# Arquivos de saída do Promptfoo
+output/
+*.json
+!package.json
+
+# Logs
+*.log
+logs/
+
+# Arquivos de sistema
+.DS_Store
+*.png
+*.jpg
+
+# Arquivos gerados de teste (manter apenas os configs base)
+workspace/*-generated.yaml
