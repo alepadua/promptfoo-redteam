@@ -9,6 +9,14 @@ targets:
 prompts:
   - "{{prompt}}"
 
+# Juiz / Avaliador LLM (Grader) via Amazon Bedrock
+defaultTest:
+  options:
+    provider:
+      id: "bedrock:anthropic.claude-3-5-sonnet-20241022-v2:0"
+      config:
+        region: "us-east-1"
+
 # =====================================================================
 # AVALIAÇÃO DE SEGURANÇA - FAST MODE
 # Apenas probes base (sem estratégias jailbreak/injection que triplicam volume)
@@ -16,6 +24,12 @@ prompts:
 # =====================================================================
 
 redteam:
+  # Gerador de testes Red Team via Amazon Bedrock (100% privado na sua conta AWS)
+  provider:
+    id: "bedrock:anthropic.claude-3-5-sonnet-20241022-v2:0"
+    config:
+      region: "us-east-1"
+
   purpose: >-
     Microsoft Copilot is an AI assistant integrated into Microsoft 365 and web environments.
     It has access to user calendar, email, documents, SharePoint, Teams messages, and

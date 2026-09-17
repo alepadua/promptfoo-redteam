@@ -96,19 +96,59 @@ promptfoo auth logout
 
 ---
 
-### 3. Configuração do Juiz de IA (Opcional, mas Altamente Recomendado)
+### 3. Configuração do Amazon Bedrock (Geração de Testes & Juiz Local 100% Privado)
 
-* **Opção A — Google Gemini (Recomendado — Gratuito):**
-  Obtenha uma chave em [Google AI Studio](https://aistudio.google.com/apikey):
-  ```env
-  GOOGLE_API_KEY=sua_chave_gemini_aqui
-  ```
-* **Opção B — OpenAI:**
-  ```env
-  OPENAI_API_KEY=sua_chave_openai_aqui
-  ```
-* **Opção C — Sem Chave Externa:**
-  Os testes rodarão normalmente; os casos ambíguos registrarão aviso de grader, mas as respostas brutas são salvas integralmente nos logs para auditoria manual.
+Você pode utilizar o **Amazon Bedrock** (ex: Claude 3.5 Sonnet v2) tanto para:
+1. **Gerar novos casos de teste Red Team** a partir dos plugins de segurança (`redteam.provider`), sem enviar seus prompts ou políticas para a API da Promptfoo.
+2. **Atuar como Juiz / Grader** (`defaultTest.options.provider`) para avaliar automaticamente se o Copilot ou Rovo vazou informações ou violou políticas de segurança.
+
+#### Passo A: Configurar as credenciais AWS no `.env`
+O Promptfoo utiliza o SDK oficial da AWS (`@aws-sdk/client-bedrock-runtime`). Configure no seu `.env`:
+
+```env
+# Região onde os modelos do Bedrock estão ativos (us-east-1, us-west-2, sa-east-1, etc.)
+AWS_REGION=us-east-1
+
+# Opção 1: Credenciais diretas de IAM (Access Key e Secret)
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=...
+# AWS_SESSION_TOKEN= (obrigatório caso use credenciais temporárias ou STS)
+
+# Opção 2: Ou Perfil local do AWS CLI (~/.aws/credentials ou AWS SSO)
+# AWS_PROFILE=default
+```
+
+> **Permissões Mínimas de IAM:** O usuário/role precisa apenas da permissão `bedrock:InvokeModel` no ARN dos modelos que você pretende utilizar.
+
+#### Passo B: Modelos recomendados do Bedrock
+No `workspace/security-eval-fast.yaml` e `workspace/rovo-security-eval.yaml`, o provider já vem pré-configurado:
+* `bedrock:anthropic.claude-3-5-sonnet-20241022-v2:0` (Claude 3.5 Sonnet v2 — Máxima eficácia e raciocínio adversarial)
+* `bedrock:us.anthropic.claude-3-5-sonnet-20241022-v2:0` (Cross-region inference profile — Maior disponibilidade)
+* `bedrock:anthropic.claude-3-haiku-20240307-v1:0` (Claude 3 Haiku — Rápido e ultra-econômico)
+
+#### Passo C: Como sintetizar novos casos via Bedrock
+```bash
+# Gerar casos de teste para Copilot via Bedrock (local)
+promptfoo redteam generate \
+  -c workspace/security-eval-fast.yaml \
+  -o workspace/security-eval-fast-generated.yaml \
+  --force
+
+# Gerar casos de teste para Rovo via Bedrock (local)
+promptfoo redteam generate \
+  -c workspace/rovo-security-eval.yaml \
+  -o workspace/rovo-security-eval-generated.yaml \
+  --force
+```
+
+---
+
+### 4. Outros Provedores Alternativos de IA (Opcional)
+
+Caso não queira usar o Bedrock em alguma máquina específica:
+* **Google Gemini (Gratuito):** `GOOGLE_API_KEY=sua_chave` em [Google AI Studio](https://aistudio.google.com/apikey).
+* **OpenAI:** `OPENAI_API_KEY=sua_chave` em [OpenAI Platform](https://platform.openai.com/api-keys).
+* **Sem Chave Externa:** Os testes executam normalmente contra o Copilot/Rovo; as respostas brutas são salvas integralmente nos arquivos de saída e relatórios para auditoria humana.
 
 ---
 

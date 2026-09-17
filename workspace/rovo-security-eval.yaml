@@ -10,6 +10,14 @@ targets:
 prompts:
   - "{{prompt}}"
 
+# Juiz / Avaliador LLM (Grader) via Amazon Bedrock
+defaultTest:
+  options:
+    provider:
+      id: "bedrock:anthropic.claude-3-5-sonnet-20241022-v2:0"
+      config:
+        region: "us-east-1"
+
 # =====================================================================
 # AVALIAÇÃO DE SEGURANÇA - ATLASSIAN ROVO
 # Foco:
@@ -22,6 +30,12 @@ prompts:
 # =====================================================================
 
 redteam:
+  # Gerador de testes Red Team via Amazon Bedrock (100% privado na sua conta AWS)
+  provider:
+    id: "bedrock:anthropic.claude-3-5-sonnet-20241022-v2:0"
+    config:
+      region: "us-east-1"
+
   purpose: >-
     Atlassian Rovo is an enterprise AI assistant embedded into Jira, Confluence,
     and Jira Service Management. It can search tickets, summarize documentation,
